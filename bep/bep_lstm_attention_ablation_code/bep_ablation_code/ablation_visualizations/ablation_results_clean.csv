@@ -1,0 +1,7 @@
+model,feature_set,MAE,RMSE,R2
+LSTM,Glucose only,16.410454,23.080012,0.853833
+Attention-LSTM,Glucose only,16.455406,23.119602,0.853331
+LSTM,Glucose + insulin,16.589853,23.270222,0.851414
+Attention-LSTM,Glucose + insulin,16.350945,23.19927,0.852319
+LSTM,Glucose + meal,16.672958,23.305486,0.850963
+Attention-LSTM,Glucose + meal,16.11932,22.80725,0.857268

@@ -1,0 +1,4 @@
+model,feature_set,static_features,n_train,n_test,MAE,RMSE,R2
+transformer,glucose_only,none,134574,31527,16.737436294555664,23.55552444615899,0.8477482795715332
+transformer,glucose_insulin,"basal, bolus, bolus_30min, time_since_last_bolus_min",134574,31527,16.510757446289062,23.325785842201544,0.8507035970687866
+transformer,glucose_meal,"carbs, carbs_30min, time_since_last_meal_min",134574,31527,16.69355010986328,23.097292575460145,0.8536142110824585
