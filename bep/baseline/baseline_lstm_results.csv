@@ -1,0 +1,2 @@
+model,feature_set,sequential_features,static_features,epochs,batch_size,eval_batch_size,learning_rate,weight_decay,hidden_size,num_layers,dropout,n_train,n_test,MAE,RMSE,R2
+LSTM,glucose_insulin,"glucose_lag_12, glucose_lag_11, glucose_lag_10, glucose_lag_9, glucose_lag_8, glucose_lag_7, glucose_lag_6, glucose_lag_5, glucose_lag_4, glucose_lag_3, glucose_lag_2, glucose_lag_1","basal, bolus, bolus_30min, glucose_slope",50,64,256,0.001,1e-05,64,1,0.2,134574,30681,14.20083236694336,20.494336346064614,0.8848726153373718
