@@ -1,0 +1,13 @@
+lag,minutes_before_prediction,average_attention_weight
+glucose_lag_12,60,0.00058144797
+glucose_lag_11,55,0.00037944663
+glucose_lag_10,50,0.00041746956
+glucose_lag_9,45,0.0005530165
+glucose_lag_8,40,0.0008386584
+glucose_lag_7,35,0.0014897872
+glucose_lag_6,30,0.0030640443
+glucose_lag_5,25,0.007534051
+glucose_lag_4,20,0.022416577
+glucose_lag_3,15,0.07048755
+glucose_lag_2,10,0.21835108
+glucose_lag_1,5,0.6738889

@@ -1,0 +1,7 @@
+model,feature_set,static_features,n_train,n_test,MAE,RMSE,R2
+lstm,glucose_only,none,134574,31527,16.34534454345703,23.02403131657022,0.8545413613319397
+attention_lstm,glucose_only,none,134574,31527,16.788610458374023,23.29996495060065,0.8510339856147766
+lstm,glucose_insulin,"basal, bolus, bolus_30min, time_since_last_bolus_min",134574,31527,15.967339515686035,22.878521757589585,0.8563741445541382
+attention_lstm,glucose_insulin,"basal, bolus, bolus_30min, time_since_last_bolus_min",134574,31527,16.56791877746582,23.420022129012548,0.8494948744773865
+lstm,glucose_meal,"carbs, carbs_30min, time_since_last_meal_min",134574,31527,16.03496742248535,22.627751472887226,0.8595054149627686
+attention_lstm,glucose_meal,"carbs, carbs_30min, time_since_last_meal_min",134574,31527,15.987298965454102,22.989085385786883,0.8549826145172119

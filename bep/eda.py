@@ -180,3 +180,102 @@ if not meal_df.empty:
 
 
 print("\nEDA completed successfully.")
+
+# --------------------------------------------------
+# CGM MISSINGNESS / SENSOR GAP ANALYSIS FROM XML
+# --------------------------------------------------
+
+print("\n===== CGM MISSINGNESS / SENSOR GAP ANALYSIS =====")
+
+# Sort per patient and timestamp
+glucose_gap_df = glucose_df.sort_values(["patient", "timestamp"]).copy()
+
+# Difference between consecutive CGM timestamps per patient
+glucose_gap_df["time_diff_minutes"] = (
+    glucose_gap_df.groupby("patient")["timestamp"]
+    .diff()
+    .dt.total_seconds() / 60
+)
+
+# Expected interval is 5 minutes
+expected_interval = 5
+
+# Gaps larger than 5 minutes indicate missing CGM measurements
+glucose_gaps = glucose_gap_df[
+    glucose_gap_df["time_diff_minutes"] > expected_interval
+].copy()
+
+# Number of missing 5-minute CGM measurements inside each gap
+glucose_gaps["estimated_missing_cgm_points"] = (
+    glucose_gaps["time_diff_minutes"] / expected_interval - 1
+).round().astype(int)
+
+total_observed_cgm = len(glucose_df)
+total_missing_cgm = glucose_gaps["estimated_missing_cgm_points"].sum()
+total_expected_cgm = total_observed_cgm + total_missing_cgm
+
+missing_cgm_percentage = (
+    100 * total_missing_cgm / total_expected_cgm
+    if total_expected_cgm > 0 else 0
+)
+
+print(f"Observed CGM measurements: {total_observed_cgm}")
+print(f"Estimated missing CGM measurements: {total_missing_cgm}")
+print(f"Estimated total expected CGM measurements: {total_expected_cgm}")
+print(f"Estimated missing CGM percentage: {missing_cgm_percentage:.4f}%")
+
+# Summary per patient
+gap_summary = (
+    glucose_gaps.groupby("patient")
+    .agg(
+        number_of_gaps=("time_diff_minutes", "count"),
+        mean_gap_minutes=("time_diff_minutes", "mean"),
+        max_gap_minutes=("time_diff_minutes", "max"),
+        estimated_missing_cgm_points=("estimated_missing_cgm_points", "sum")
+    )
+    .reset_index()
+)
+
+# Add patients with no gaps
+all_patients = pd.DataFrame({"patient": sorted(glucose_df["patient"].unique())})
+gap_summary = all_patients.merge(gap_summary, on="patient", how="left").fillna(0)
+
+# Add observed and expected measurements per patient
+observed_per_patient = (
+    glucose_df.groupby("patient")
+    .size()
+    .reset_index(name="observed_cgm_measurements")
+)
+
+gap_summary = gap_summary.merge(observed_per_patient, on="patient", how="left")
+gap_summary["expected_cgm_measurements"] = (
+    gap_summary["observed_cgm_measurements"]
+    + gap_summary["estimated_missing_cgm_points"]
+)
+
+gap_summary["missing_cgm_percentage"] = (
+    100
+    * gap_summary["estimated_missing_cgm_points"]
+    / gap_summary["expected_cgm_measurements"]
+)
+
+print("\nCGM gap summary per patient:")
+print(gap_summary)
+
+# Save summary tables
+gap_summary.to_csv("cgm_gap_summary_per_patient.csv", index=False)
+glucose_gaps.to_csv("cgm_detected_gaps.csv", index=False)
+
+print("\nSaved:")
+print("- cgm_gap_summary_per_patient.csv")
+print("- cgm_detected_gaps.csv")
+
+# Optional: inspect the largest gaps
+print("\nLargest detected CGM gaps:")
+print(
+    glucose_gaps[
+        ["patient", "timestamp", "time_diff_minutes", "estimated_missing_cgm_points"]
+    ]
+    .sort_values("time_diff_minutes", ascending=False)
+    .head(20)
+)
