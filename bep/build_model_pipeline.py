@@ -20,7 +20,7 @@ def parse_patient_xml(filepath):
         "bolus": []
     }
 
-    # GLUCOSE
+    
     g_block = root.find("glucose_level")
     if g_block is not None:
         for e in g_block.findall("event"):
@@ -28,7 +28,7 @@ def parse_patient_xml(filepath):
                 (patient_id, e.get("ts"), float(e.get("value")))
             )
 
-    # BASAL
+    
     b_block = root.find("basal")
     if b_block is not None:
         for e in b_block.findall("event"):
@@ -36,7 +36,7 @@ def parse_patient_xml(filepath):
                 (patient_id, e.get("ts"), float(e.get("value")))
             )
 
-    # BOLUS
+    
     bo_block = root.find("bolus")
     if bo_block is not None:
         for e in bo_block.findall("event"):

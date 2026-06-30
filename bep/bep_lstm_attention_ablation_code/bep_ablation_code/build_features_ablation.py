@@ -143,14 +143,14 @@ def build_regular_glucose_table(glucose_df, basal_df, bolus_df, meal_df):
 def add_features(df: pd.DataFrame, horizon_steps: int = 6, history_steps: int = 12):
     df = df.sort_values(["patient", "timestamp"]).copy()
 
-    # Glucose history: lag_12 is oldest, lag_1 is most recent.
+    
     for lag in range(1, history_steps + 1):
         df[f"glucose_lag_{lag}"] = df.groupby("patient")["glucose"].shift(lag)
 
-    # 30-minute default target: 6 steps ahead with 5-minute sampling.
+    
     df["target"] = df.groupby("patient")["glucose"].shift(-horizon_steps)
 
-    # Rolling intervention summaries.
+    
     df["bolus_30min"] = (
         df.groupby("patient")["bolus"]
         .rolling(window=6, min_periods=1)
@@ -164,7 +164,7 @@ def add_features(df: pd.DataFrame, horizon_steps: int = 6, history_steps: int = 
         .reset_index(level=0, drop=True)
     )
 
-    # Timing features: minutes since most recent bolus/meal.
+    
     df["last_bolus_time"] = df["timestamp"].where(df["bolus"] > 0)
     df["last_bolus_time"] = df.groupby("patient")["last_bolus_time"].ffill()
     df["time_since_last_bolus_min"] = (
@@ -177,7 +177,7 @@ def add_features(df: pd.DataFrame, horizon_steps: int = 6, history_steps: int = 
         (df["timestamp"] - df["last_meal_time"]).dt.total_seconds() / 60.0
     )
 
-    # Use a large value for "no previous event yet" within the file.
+    
     df["time_since_last_bolus_min"] = df["time_since_last_bolus_min"].fillna(9999.0).clip(0, 9999)
     df["time_since_last_meal_min"] = df["time_since_last_meal_min"].fillna(9999.0).clip(0, 9999)
 

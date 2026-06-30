@@ -1,25 +1,25 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# ============================================================
-# Load data
-# ============================================================
+
+
+
 
 train = pd.read_csv("train_features_ablation.csv", parse_dates=["timestamp"])
 test = pd.read_csv("test_features_ablation.csv", parse_dates=["timestamp"])
 
-# Combine train + test
+
 df = pd.concat([train, test], ignore_index=True)
 
-# ============================================================
-# Extract hour
-# ============================================================
+
+
+
 
 df["hour"] = df["timestamp"].dt.hour
 
-# ============================================================
-# Average glucose per patient per hour
-# ============================================================
+
+
+
 
 avg_glucose = (
     df.groupby(["patient", "hour"])["glucose"]
@@ -29,17 +29,17 @@ avg_glucose = (
 
 patients = sorted(avg_glucose["patient"].unique())
 
-# ============================================================
-# Create subplot grid
-# ============================================================
+
+
+
 
 fig, axes = plt.subplots(3, 4, figsize=(16, 10), sharex=True, sharey=True)
 
 axes = axes.flatten()
 
-# ============================================================
-# Plot each patient separately
-# ============================================================
+
+
+
 
 for ax, patient in zip(axes, patients):
 
@@ -56,9 +56,9 @@ for ax, patient in zip(axes, patients):
     ax.set_xticks(range(0, 24, 6))
     ax.grid(True, alpha=0.3)
 
-# ============================================================
-# Global labels
-# ============================================================
+
+
+
 
 fig.suptitle(
     "Average Glucose Levels Throughout the Day per Patient",
@@ -70,9 +70,9 @@ fig.supylabel("Average Glucose", fontsize=12)
 
 plt.tight_layout(rect=[0.03, 0.03, 1, 0.96])
 
-# ============================================================
-# Save figure
-# ============================================================
+
+
+
 
 plt.savefig(
     "avg_glucose_subplots.png",

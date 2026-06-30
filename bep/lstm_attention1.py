@@ -9,10 +9,6 @@ from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
 
-# --------------------------------------------------
-# REPRODUCIBILITY
-# --------------------------------------------------
-
 SEED = 42
 random.seed(SEED)
 np.random.seed(SEED)
@@ -25,14 +21,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 
 
-# --------------------------------------------------
-# LOAD DATA
-# --------------------------------------------------
-
 train = pd.read_csv("train_features.csv")
 test = pd.read_csv("test_features.csv")
 
-lag_cols = [f"glucose_lag_{i}" for i in range(12, 0, -1)]   # oldest -> most recent
+lag_cols = [f"glucose_lag_{i}" for i in range(12, 0, -1)]   
 static_cols = ["basal", "bolus", "bolus_30min", "glucose_slope"]
 target_col = "target"
 
@@ -44,11 +36,6 @@ test = test[needed_cols].copy()
 train = train.dropna().reset_index(drop=True)
 test = test.dropna().reset_index(drop=True)
 
-
-# --------------------------------------------------
-# PREPARE INPUTS
-# --------------------------------------------------
-
 X_train_seq = train[lag_cols].values.astype(np.float32)
 X_test_seq = test[lag_cols].values.astype(np.float32)
 
@@ -58,7 +45,6 @@ X_test_static = test[static_cols].values.astype(np.float32)
 y_train = train[target_col].values.astype(np.float32).reshape(-1, 1)
 y_test = test[target_col].values.astype(np.float32).reshape(-1, 1)
 
-# scale sequence features
 seq_scaler = StandardScaler()
 X_train_seq_2d = seq_scaler.fit_transform(X_train_seq)
 X_test_seq_2d = seq_scaler.transform(X_test_seq)
@@ -66,20 +52,14 @@ X_test_seq_2d = seq_scaler.transform(X_test_seq)
 X_train_seq = X_train_seq_2d.reshape(-1, len(lag_cols), 1)
 X_test_seq = X_test_seq_2d.reshape(-1, len(lag_cols), 1)
 
-# scale static features
 static_scaler = StandardScaler()
 X_train_static = static_scaler.fit_transform(X_train_static)
 X_test_static = static_scaler.transform(X_test_static)
 
-# scale target
 y_scaler = StandardScaler()
 y_train_scaled = y_scaler.fit_transform(y_train)
 y_test_scaled = y_scaler.transform(y_test)
 
-
-# --------------------------------------------------
-# DATASET
-# --------------------------------------------------
 
 class GlucoseDataset(Dataset):
     def __init__(self, seq_x, static_x, y):
@@ -101,10 +81,6 @@ train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=256, shuffle=False)
 
 
-# --------------------------------------------------
-# SIMPLE ATTENTION LSTM MODEL
-# --------------------------------------------------
-
 class AttentionLSTMRegressor(nn.Module):
     def __init__(self, seq_input_size=1, hidden_size=64, num_layers=1, static_size=4, dropout=0.2):
         super().__init__()
@@ -117,7 +93,6 @@ class AttentionLSTMRegressor(nn.Module):
             dropout=dropout if num_layers > 1 else 0.0
         )
 
-        # attention score per timestep
         self.attention = nn.Linear(hidden_size, 1)
 
         self.fc = nn.Sequential(
@@ -131,17 +106,17 @@ class AttentionLSTMRegressor(nn.Module):
         )
 
     def forward(self, seq_x, static_x):
-        # lstm_out: (batch, seq_len, hidden_size)
+        
         lstm_out, _ = self.lstm(seq_x)
 
-        # attention scores: (batch, seq_len, 1)
+        
         attn_scores = self.attention(lstm_out)
 
-        # attention weights: normalize across time dimension
+        
         attn_weights = torch.softmax(attn_scores, dim=1)
 
-        # weighted sum of LSTM outputs = context vector
-        context = torch.sum(attn_weights * lstm_out, dim=1)  # (batch, hidden_size)
+        
+        context = torch.sum(attn_weights * lstm_out, dim=1)  
 
         combined = torch.cat([context, static_x], dim=1)
         out = self.fc(combined)
@@ -159,11 +134,6 @@ model = AttentionLSTMRegressor(
 
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-
-
-# --------------------------------------------------
-# TRAIN
-# --------------------------------------------------
 
 EPOCHS = 30
 
@@ -190,9 +160,6 @@ for epoch in range(EPOCHS):
     print(f"Epoch {epoch + 1:02d}/{EPOCHS} - Train Loss: {avg_train_loss:.4f}")
 
 
-# --------------------------------------------------
-# EVALUATE
-# --------------------------------------------------
 
 model.eval()
 all_preds = []
@@ -223,9 +190,9 @@ print(f"RMSE : {rmse:.3f}")
 print(f"R²   : {r2:.3f}")
 
 
-# --------------------------------------------------
-# SAVE PREDICTIONS
-# --------------------------------------------------
+
+
+
 
 results = test[["patient", "timestamp"]].copy()
 results["true_glucose_30min"] = y_true
@@ -235,12 +202,12 @@ results.to_csv("attention_lstm_predictions.csv", index=False)
 print("\nSaved attention_lstm_predictions.csv")
 
 
-# --------------------------------------------------
-# SAVE AVERAGE ATTENTION WEIGHTS
-# --------------------------------------------------
 
-attn_array = np.vstack(all_attn)               # (n_samples, seq_len, 1)
-attn_array = np.squeeze(attn_array, axis=2)    # (n_samples, seq_len)
+
+
+
+attn_array = np.vstack(all_attn)               
+attn_array = np.squeeze(attn_array, axis=2)    
 
 avg_attn = attn_array.mean(axis=0)
 

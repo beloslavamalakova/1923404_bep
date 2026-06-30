@@ -9,9 +9,9 @@ ATTN_DIR = "ablation_outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
-# --------------------------------------------------
-# 1. LOAD ATTENTION WEIGHT FILES
-# --------------------------------------------------
+
+
+
 
 attention_files = sorted(glob.glob(os.path.join(ATTN_DIR, "attention_weights_*.csv")))
 
@@ -23,8 +23,8 @@ all_attention = []
 for file in attention_files:
     df = pd.read_csv(file)
 
-    # Fix for older attention files that only have:
-    # lag, average_attention_weight
+    
+    
     if "minutes_before_prediction" not in df.columns:
         if "lag" not in df.columns:
             raise ValueError(f"{file} has no 'lag' column and no 'minutes_before_prediction' column.")
@@ -52,9 +52,9 @@ attention_df.to_csv(
 )
 
 
-# --------------------------------------------------
-# 2. ATTENTION WEIGHTS PER FEATURE SET
-# --------------------------------------------------
+
+
+
 
 for feature_set in attention_df["feature_set"].unique():
     df = attention_df[attention_df["feature_set"] == feature_set].copy()
@@ -74,9 +74,9 @@ for feature_set in attention_df["feature_set"].unique():
     plt.show()
 
 
-# --------------------------------------------------
-# 3. COMPARE ATTENTION WEIGHTS ACROSS FEATURE SETS
-# --------------------------------------------------
+
+
+
 
 plt.figure(figsize=(9, 5))
 
@@ -104,9 +104,9 @@ plt.savefig(
 plt.show()
 
 
-# --------------------------------------------------
-# 4. ATTENTION HEATMAP
-# --------------------------------------------------
+
+
+
 
 heatmap_df = attention_df.pivot(
     index="feature_set",
@@ -132,9 +132,9 @@ plt.savefig(
 plt.show()
 
 
-# --------------------------------------------------
-# 5. FEATURE DISTRIBUTIONS
-# --------------------------------------------------
+
+
+
 
 if os.path.exists("train_features_ablation.csv"):
     train = pd.read_csv("train_features_ablation.csv")
@@ -166,9 +166,9 @@ if os.path.exists("train_features_ablation.csv"):
             plt.show()
 
 
-# --------------------------------------------------
-# 6. FEATURE VS TARGET RELATIONSHIPS
-# --------------------------------------------------
+
+
+
 
 if os.path.exists("train_features_ablation.csv"):
     train = pd.read_csv("train_features_ablation.csv")
@@ -201,9 +201,9 @@ if os.path.exists("train_features_ablation.csv"):
             plt.show()
 
 
-# --------------------------------------------------
-# 7. PREDICTION ERRORS FOR ATTENTION-LSTM
-# --------------------------------------------------
+
+
+
 
 prediction_files = sorted(
     glob.glob(os.path.join(ATTN_DIR, "predictions_attention_lstm_*.csv"))

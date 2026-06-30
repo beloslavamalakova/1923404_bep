@@ -9,11 +9,6 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import GridSearchCV
 
-
-# --------------------------------------------------
-# LOAD DATA
-# --------------------------------------------------
-
 train = pd.read_csv("train_features.csv")
 test = pd.read_csv("test_features.csv")
 
@@ -27,10 +22,6 @@ y_train = train["target"]
 X_test = test[feature_cols]
 y_test = test["target"]
 
-
-# --------------------------------------------------
-# XGBOOST MODEL
-# --------------------------------------------------
 
 xgb = XGBRegressor(
     objective="reg:squarederror",
@@ -62,9 +53,6 @@ best_model = grid.best_estimator_
 print("Best parameters:", grid.best_params_)
 
 
-# --------------------------------------------------
-# EVALUATE
-# --------------------------------------------------
 
 y_pred = best_model.predict(X_test)
 
@@ -78,10 +66,6 @@ print(f"MAE  : {mae:.3f}")
 print(f"RMSE : {rmse:.3f}")
 print(f"R²   : {r2:.3f}")
 
-
-# --------------------------------------------------
-# SAVE PREDICTIONS
-# --------------------------------------------------
 
 results = test[["patient", "timestamp"]].copy()
 results["true_glucose_30min"] = y_test

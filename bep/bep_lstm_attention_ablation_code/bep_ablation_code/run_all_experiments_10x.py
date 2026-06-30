@@ -22,9 +22,9 @@ def run_command(command):
     print("Finished.")
 
 
-# ============================================================
-# RUN LSTM + ATTENTION-LSTM 10 TIMES
-# ============================================================
+
+
+
 
 for seed in tqdm(range(N_RUNS), desc="Overall seeds"):
 
@@ -49,9 +49,9 @@ for seed in tqdm(range(N_RUNS), desc="Overall seeds"):
     all_runs.append(results)
 
 
-# ============================================================
-# COMBINE RAW RESULTS
-# ============================================================
+
+
+
 
 all_results = pd.concat(all_runs, ignore_index=True)
 
@@ -59,9 +59,9 @@ raw_path = os.path.join(FINAL_OUTPUT_DIR, "all_runs_raw.csv")
 all_results.to_csv(raw_path, index=False)
 
 
-# ============================================================
-# MEAN ± STD TABLE
-# ============================================================
+
+
+
 
 summary = (
     all_results
@@ -116,9 +116,9 @@ summary.to_csv(
 )
 
 
-# ============================================================
-# STATISTICAL TESTING: LSTM VS ATTENTION-LSTM
-# ============================================================
+
+
+
 
 significance_rows = []
 
@@ -198,9 +198,9 @@ significance_df.to_csv(
 )
 
 
-# ============================================================
-# LATEX TABLE
-# ============================================================
+
+
+
 
 latex_table = final_table.to_latex(index=False, escape=False)
 

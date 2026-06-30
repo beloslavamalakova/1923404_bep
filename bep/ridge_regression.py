@@ -11,16 +11,8 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV
 
 
-# --------------------------------------------------
-# LOAD DATA
-# --------------------------------------------------
-
 train = pd.read_csv("train_features.csv")
 test = pd.read_csv("test_features.csv")
-
-# --------------------------------------------------
-# DEFINE FEATURES
-# --------------------------------------------------
 
 feature_cols = [col for col in train.columns
                 if col.startswith("glucose_lag_")
@@ -33,19 +25,11 @@ X_test = test[feature_cols]
 y_test = test["target"]
 
 
-# --------------------------------------------------
-# SCALE FEATURES
-# --------------------------------------------------
-
 scaler = StandardScaler()
 
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-
-# --------------------------------------------------
-# RIDGE WITH CROSS-VALIDATION
-# --------------------------------------------------
 
 param_grid = {
     "alpha": [0.01, 0.1, 1, 10, 100]
@@ -68,10 +52,6 @@ best_model = grid.best_estimator_
 print("Best alpha:", grid.best_params_["alpha"])
 
 
-# --------------------------------------------------
-# EVALUATE
-# --------------------------------------------------
-
 y_pred = best_model.predict(X_test_scaled)
 
 mae = mean_absolute_error(y_test, y_pred)
@@ -83,11 +63,6 @@ print("------------------")
 print(f"MAE  : {mae:.3f}")
 print(f"RMSE : {rmse:.3f}")
 print(f"R²   : {r2:.3f}")
-
-
-# --------------------------------------------------
-# SAVE PREDICTIONS
-# --------------------------------------------------
 
 results = test[["patient", "timestamp"]].copy()
 results["true_glucose_30min"] = y_test

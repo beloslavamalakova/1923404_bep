@@ -108,16 +108,16 @@ def build_regular_glucose_table(glucose_df, basal_df, bolus_df, meal_df):
 
         merged = g[["timestamp", "glucose"]].copy()
 
-        # Basal: use backward-fill (step function) — unchanged, correct behaviour.
+        
         if not b.empty:
             merged = pd.merge_asof(merged, b[["timestamp", "basal"]], on="timestamp", direction="backward")
         else:
             merged["basal"] = np.nan
 
-        # FIX: resample bolus events into 5-min bins (summing within each bin)
-        # then merge on the rounded CGM timestamps so nothing is dropped.
+        
+        
         if not bo.empty:
-            # Round bolus timestamps to the nearest 5-min boundary.
+            
             bo_binned = bo.copy()
             bo_binned["timestamp"] = bo_binned["timestamp"].dt.round("5min")
             bo_binned = bo_binned.groupby("timestamp", as_index=False)["bolus"].sum()
@@ -131,7 +131,7 @@ def build_regular_glucose_table(glucose_df, basal_df, bolus_df, meal_df):
         else:
             merged["bolus"] = 0.0
 
-        # FIX: same binning fix for meal / carbs.
+        
         if not m.empty:
             m_binned = m.copy()
             m_binned["timestamp"] = m_binned["timestamp"].dt.round("5min")
@@ -160,15 +160,15 @@ def build_regular_glucose_table(glucose_df, basal_df, bolus_df, meal_df):
 def add_features(df: pd.DataFrame, horizon_steps: int = 6, history_steps: int = 12):
     df = df.sort_values(["patient", "timestamp"]).copy()
 
-    # Glucose history: lag_12 is oldest, lag_1 is most recent.
+    
     for lag in range(1, history_steps + 1):
         df[f"glucose_lag_{lag}"] = df.groupby("patient")["glucose"].shift(lag)
 
-    # 30-minute default target: 6 steps ahead with 5-minute sampling.
+    
     df["target"] = df.groupby("patient")["glucose"].shift(-horizon_steps)
 
-    # Rolling intervention summaries.
-    # These are now meaningful because bolus/carbs are no longer mostly zero.
+    
+    
     df["bolus_30min"] = (
         df.groupby("patient")["bolus"]
         .rolling(window=6, min_periods=1)
@@ -182,7 +182,7 @@ def add_features(df: pd.DataFrame, horizon_steps: int = 6, history_steps: int = 
         .reset_index(level=0, drop=True)
     )
 
-    # Timing features: minutes since most recent bolus/meal.
+    
     df["last_bolus_time"] = df["timestamp"].where(df["bolus"] > 0)
     df["last_bolus_time"] = df.groupby("patient")["last_bolus_time"].ffill()
     df["time_since_last_bolus_min"] = (
@@ -195,9 +195,9 @@ def add_features(df: pd.DataFrame, horizon_steps: int = 6, history_steps: int = 
         (df["timestamp"] - df["last_meal_time"]).dt.total_seconds() / 60.0
     )
 
-    # FIX: cap at 480 min (8 hours) instead of 9999.
-    # 9999 was an extreme outlier that distorted StandardScaler; physiologically
-    # nothing meaningful changes after ~8 hours without insulin or food.
+    
+    
+    
     df["time_since_last_bolus_min"] = df["time_since_last_bolus_min"].fillna(480.0).clip(0, 480)
     df["time_since_last_meal_min"] = df["time_since_last_meal_min"].fillna(480.0).clip(0, 480)
 
@@ -222,7 +222,7 @@ def main():
         feat_df.to_csv(out_path, index=False)
         print(f"Saved {out_path}: {feat_df.shape}")
 
-        # Sanity-check: report how sparse the intervention columns actually are.
+        
         bolus_nonzero = (feat_df["bolus"] > 0).mean() * 100
         carbs_nonzero = (feat_df["carbs"] > 0).mean() * 100
         print(f"  bolus > 0: {bolus_nonzero:.1f}% of rows  |  carbs > 0: {carbs_nonzero:.1f}% of rows")

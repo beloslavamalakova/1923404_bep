@@ -55,7 +55,7 @@ def set_seed(seed: int = SEED):
 
 
 def get_feature_sets(columns):
-    lag_cols = [f"glucose_lag_{i}" for i in range(12, 0, -1)]  # lag_12 ... lag_1
+    lag_cols = [f"glucose_lag_{i}" for i in range(12, 0, -1)]  
 
     feature_sets = {
         "glucose_only": [],
@@ -260,7 +260,7 @@ def run_lstm(feature_set_name, train, test, lag_cols, static_cols, args, device)
     n_train, seq_len = X_train_seq.shape
     n_test = X_test_seq.shape[0]
 
-    # Same style as the newer ablation code: global scaling over all sequence values.
+    
     X_train_seq = seq_scaler.fit_transform(X_train_seq.reshape(-1, 1)).reshape(n_train, seq_len, 1)
     X_test_seq = seq_scaler.transform(X_test_seq.reshape(-1, 1)).reshape(n_test, seq_len, 1)
 

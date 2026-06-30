@@ -106,8 +106,8 @@ class AttentionLSTMRegressor(nn.Module):
         )
 
     def forward(self, seq_x, static_x):
-        lstm_out, _ = self.lstm(seq_x)              # (batch, seq_len, hidden)
-        attn_scores = self.attention(lstm_out)      # (batch, seq_len, 1)
+        lstm_out, _ = self.lstm(seq_x)              
+        attn_scores = self.attention(lstm_out)      
         attn_weights = torch.softmax(attn_scores, dim=1)
         context = torch.sum(attn_weights * lstm_out, dim=1)
         combined = torch.cat([context, static_x], dim=1)
@@ -123,7 +123,7 @@ def get_feature_sets(train_columns):
         "glucose_meal": ["carbs", "carbs_30min", "time_since_last_meal_min"],
     }
 
-    # Be forgiving if you run on old train_features.csv without timing/meal columns.
+    
     cleaned = {}
     for name, static_cols in feature_sets.items():
         available_static = [c for c in static_cols if c in train_columns]

@@ -33,9 +33,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
-# -----------------------------
-# CONFIG
-# -----------------------------
+
+
+
 SEED = 42
 TRAIN_FILE = "train_features.csv"
 TEST_FILE = "test_features.csv"
@@ -51,14 +51,14 @@ NUM_LAYERS = 1
 DROPOUT = 0.2
 GRAD_CLIP = 1.0
 
-# Set to True only if you want to reproduce the older Table 1 setup.
-# Set to False for a cleaner glucose + insulin setup without slope.
+
+
 USE_GLUCOSE_SLOPE = True
 
 
-# -----------------------------
-# REPRODUCIBILITY
-# -----------------------------
+
+
+
 def set_seed(seed: int = 42):
     random.seed(seed)
     np.random.seed(seed)
@@ -69,9 +69,9 @@ def set_seed(seed: int = 42):
         torch.backends.cudnn.benchmark = False
 
 
-# -----------------------------
-# DATASET
-# -----------------------------
+
+
+
 class GlucoseDataset(Dataset):
     def __init__(self, seq_x, static_x, y):
         self.seq_x = torch.tensor(seq_x, dtype=torch.float32)
@@ -85,9 +85,9 @@ class GlucoseDataset(Dataset):
         return self.seq_x[idx], self.static_x[idx], self.y[idx]
 
 
-# -----------------------------
-# MODEL
-# -----------------------------
+
+
+
 class LSTMRegressor(nn.Module):
     def __init__(self, seq_input_size=1, hidden_size=64, num_layers=1, static_size=0, dropout=0.2):
         super().__init__()
@@ -129,7 +129,7 @@ def prepare_data(train, test, lag_cols, static_cols):
     X_train_seq = train[lag_cols].values.astype(np.float32)
     X_test_seq = test[lag_cols].values.astype(np.float32)
 
-    # Global scaling across all lag values keeps one glucose scale for the sequence.
+    
     seq_scaler = StandardScaler()
     n_train, seq_len = X_train_seq.shape
     n_test = X_test_seq.shape[0]

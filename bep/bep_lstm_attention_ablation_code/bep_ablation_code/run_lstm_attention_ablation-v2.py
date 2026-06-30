@@ -106,8 +106,8 @@ class AttentionLSTMRegressor(nn.Module):
         )
 
     def forward(self, seq_x, static_x):
-        lstm_out, _ = self.lstm(seq_x)              # (batch, seq_len, hidden)
-        attn_scores = self.attention(lstm_out)      # (batch, seq_len, 1)
+        lstm_out, _ = self.lstm(seq_x)              
+        attn_scores = self.attention(lstm_out)      
         attn_weights = torch.softmax(attn_scores, dim=1)
         context = torch.sum(attn_weights * lstm_out, dim=1)
         combined = torch.cat([context, static_x], dim=1)
@@ -115,8 +115,8 @@ class AttentionLSTMRegressor(nn.Module):
 
 
 def get_feature_sets(train_columns):
-    # lag_cols ordered oldest→newest so the LSTM sees the sequence in
-    # chronological order: lag_12 (60 min ago) ... lag_1 (5 min ago).
+    
+    
     lag_cols = [f"glucose_lag_{i}" for i in range(12, 0, -1)]
 
     feature_sets = {
@@ -125,7 +125,7 @@ def get_feature_sets(train_columns):
         "glucose_meal": ["carbs", "carbs_30min", "time_since_last_meal_min"],
     }
 
-    # Be forgiving if you run on old train_features.csv without timing/meal columns.
+    
     cleaned = {}
     for name, static_cols in feature_sets.items():
         available_static = [c for c in static_cols if c in train_columns]
@@ -145,10 +145,10 @@ def prepare_data(train, test, lag_cols, static_cols, target_col="target"):
     X_train_seq = train_sub[lag_cols].values.astype(np.float32)
     X_test_seq = test_sub[lag_cols].values.astype(np.float32)
 
-    # FIX: fit a single scaler on the flattened sequence values so that all
-    # lag columns share one mean/std.  The original code fitted StandardScaler
-    # column-by-column (one per lag), which is fine but can slightly differ
-    # per-lag; using a global scale is cleaner and more common for time-series.
+    
+    
+    
+    
     seq_scaler = StandardScaler()
     n_train, seq_len = X_train_seq.shape
     X_train_seq = seq_scaler.fit_transform(
@@ -173,7 +173,7 @@ def prepare_data(train, test, lag_cols, static_cols, target_col="target"):
 
     y_scaler = StandardScaler()
     y_train_scaled = y_scaler.fit_transform(y_train)
-    # y_test is kept in original scale for evaluation; scaled version unused.
+    
 
     return train_sub, test_sub, X_train_seq, X_train_static, y_train_scaled, X_test_seq, X_test_static, y_test, y_scaler
 
@@ -211,8 +211,8 @@ def train_one_model(model_name, feature_set_name, train, test, lag_cols, static_
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
-    # FIX: add a ReduceLROnPlateau scheduler so the learning rate decays when
-    # training loss plateaus, helping models with more features converge fully.
+    
+    
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, mode="min", factor=0.5, patience=5
 )
@@ -232,8 +232,8 @@ def train_one_model(model_name, feature_set_name, train, test, lag_cols, static_
                 preds = model(seq_batch, static_batch)
             loss = criterion(preds, y_batch)
             loss.backward()
-            # FIX: gradient clipping prevents exploding gradients, which can
-            # occur when the additional static features have high variance.
+            
+            
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
             losses.append(loss.item())
@@ -279,12 +279,12 @@ def train_one_model(model_name, feature_set_name, train, test, lag_cols, static_
     pred_df.to_csv(os.path.join(args.output_dir, f"predictions_{model_name}_{feature_set_name}.csv"), index=False)
 
     if model_name == "attention_lstm" and all_attn:
-        # attn_array shape: (N, seq_len)
-        # Index 0 = lag_12 (oldest, 60 min ago), index 11 = lag_1 (5 min ago).
+        
+        
         attn_array = np.vstack(all_attn).squeeze(axis=2)
         attn_df = pd.DataFrame({
-            "lag": lag_cols,                              # lag_12 … lag_1
-            "minutes_before_prediction": list(range(60, 0, -5)),   # 60, 55 … 5
+            "lag": lag_cols,                              
+            "minutes_before_prediction": list(range(60, 0, -5)),   
             "average_attention_weight": attn_array.mean(axis=0),
         })
         attn_df.to_csv(os.path.join(args.output_dir, f"attention_weights_{feature_set_name}.csv"), index=False)
@@ -307,7 +307,7 @@ def main():
     parser.add_argument("--test-file", default="test_features_ablation.csv")
     parser.add_argument("--target-col", default="target")
     parser.add_argument("--output-dir", default="ablation_outputs")
-    parser.add_argument("--epochs", type=int, default=50)   # FIX: raised default from 30→50
+    parser.add_argument("--epochs", type=int, default=50)   
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--eval-batch-size", type=int, default=256)
     parser.add_argument("--hidden-size", type=int, default=64)

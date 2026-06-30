@@ -5,24 +5,16 @@ def add_features(df):
 
     df = df.sort_values(["patient", "timestamp"]).copy()
 
-    # --------------------------------------------------
-    # GLUCOSE LAGS (60 min history)
-    # --------------------------------------------------
     for lag in range(1, 13):
         df[f"glucose_lag_{lag}"] = (
             df.groupby("patient")["glucose"].shift(lag)
         )
 
-    # --------------------------------------------------
-    # 30-MIN FUTURE TARGET
-    # --------------------------------------------------
+    
     df["target"] = (
         df.groupby("patient")["glucose"].shift(-6)
     )
 
-    # --------------------------------------------------
-    # BOLUS: cumulative last 30 min
-    # --------------------------------------------------
     df["bolus_30min"] = (
         df.groupby("patient")["bolus"]
         .rolling(window=6, min_periods=1)
@@ -30,9 +22,6 @@ def add_features(df):
         .reset_index(0, drop=True)
     )
 
-    # --------------------------------------------------
-    # OPTIONAL: glucose slope
-    # --------------------------------------------------
     df["glucose_slope"] = (
         df.groupby("patient")["glucose"]
         .diff()

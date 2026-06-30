@@ -11,9 +11,9 @@ OUTPUT_DIR = "ablation_visualizations"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
-# --------------------------------------------------
-# 1. ABLATION RESULTS TABLE
-# --------------------------------------------------
+
+
+
 
 results = pd.DataFrame({
     "model": [
@@ -34,9 +34,9 @@ results = pd.DataFrame({
 results.to_csv(os.path.join(OUTPUT_DIR, "ablation_results_clean.csv"), index=False)
 
 
-# --------------------------------------------------
-# 2. BAR PLOTS FOR MAE, RMSE, R2
-# --------------------------------------------------
+
+
+
 
 for metric in ["MAE", "RMSE", "R2"]:
     plt.figure(figsize=(9, 5))
@@ -50,9 +50,9 @@ for metric in ["MAE", "RMSE", "R2"]:
     plt.show()
 
 
-# --------------------------------------------------
-# 3. LINE PLOTS: HOW EACH MODEL CHANGES WITH FEATURES
-# --------------------------------------------------
+
+
+
 
 for metric in ["MAE", "RMSE", "R2"]:
     plt.figure(figsize=(8, 5))
@@ -72,9 +72,9 @@ for metric in ["MAE", "RMSE", "R2"]:
     plt.show()
 
 
-# --------------------------------------------------
-# 4. ATTENTION IMPROVEMENT OVER LSTM
-# --------------------------------------------------
+
+
+
 
 pivot = results.pivot(index="feature_set", columns="model", values=["MAE", "RMSE", "R2"])
 
@@ -99,9 +99,9 @@ for metric in ["MAE_improvement", "RMSE_improvement", "R2_improvement"]:
     plt.show()
 
 
-# --------------------------------------------------
-# 5. HEATMAP OF RESULTS
-# --------------------------------------------------
+
+
+
 
 for metric in ["MAE", "RMSE", "R2"]:
     heatmap_data = results.pivot(index="model", columns="feature_set", values=metric)
@@ -116,9 +116,9 @@ for metric in ["MAE", "RMSE", "R2"]:
     plt.show()
 
 
-# --------------------------------------------------
-# 6. LOAD PREDICTION FILES IF THEY EXIST
-# --------------------------------------------------
+
+
+
 
 prediction_files = glob.glob("*predictions*.csv") + glob.glob("outputs/*predictions*.csv")
 
@@ -141,7 +141,7 @@ for file in prediction_files:
 
         name = os.path.basename(file).replace(".csv", "")
 
-        # true vs predicted scatter
+        
         plt.figure(figsize=(6, 6))
         sns.scatterplot(data=df.sample(min(len(df), 5000), random_state=42), x=true_col, y=pred_col, alpha=0.3)
         min_val = min(df[true_col].min(), df[pred_col].min())
@@ -154,7 +154,7 @@ for file in prediction_files:
         plt.savefig(os.path.join(OUTPUT_DIR, f"{name}_true_vs_pred.png"), dpi=300)
         plt.show()
 
-        # residual plot
+        
         df["residual"] = df[true_col] - df[pred_col]
 
         plt.figure(figsize=(8, 5))
@@ -165,7 +165,7 @@ for file in prediction_files:
         plt.savefig(os.path.join(OUTPUT_DIR, f"{name}_residual_distribution.png"), dpi=300)
         plt.show()
 
-        # time-series example for one patient
+        
         if "patient" in df.columns and "timestamp" in df.columns:
             df["timestamp"] = pd.to_datetime(df["timestamp"])
             example_patient = df["patient"].iloc[0]
@@ -187,9 +187,9 @@ for file in prediction_files:
         print(f"Could not process {file}: {e}")
 
 
-# --------------------------------------------------
-# 7. ATTENTION WEIGHTS IF AVAILABLE
-# --------------------------------------------------
+
+
+
 
 attention_files = glob.glob("*attention_weights*.csv") + glob.glob("outputs/*attention_weights*.csv")
 
@@ -231,9 +231,9 @@ for file in attention_files:
         print(f"Could not process {file}: {e}")
 
 
-# --------------------------------------------------
-# 8. FEATURE DISTRIBUTIONS FROM ABLATION FEATURES
-# --------------------------------------------------
+
+
+
 
 if os.path.exists("train_features_ablation.csv"):
     train = pd.read_csv("train_features_ablation.csv")
@@ -255,7 +255,7 @@ if os.path.exists("train_features_ablation.csv"):
             plt.savefig(os.path.join(OUTPUT_DIR, f"distribution_{col}.png"), dpi=300)
             plt.show()
 
-    # glucose by hour
+    
     if "timestamp" in train.columns:
         train["timestamp"] = pd.to_datetime(train["timestamp"])
         train["hour"] = train["timestamp"].dt.hour
@@ -271,7 +271,7 @@ if os.path.exists("train_features_ablation.csv"):
         plt.savefig(os.path.join(OUTPUT_DIR, "average_glucose_by_hour.png"), dpi=300)
         plt.show()
 
-    # glucose distribution per patient
+    
     if "patient" in train.columns:
         plt.figure(figsize=(10, 5))
         sns.boxplot(data=train, x="patient", y="glucose")

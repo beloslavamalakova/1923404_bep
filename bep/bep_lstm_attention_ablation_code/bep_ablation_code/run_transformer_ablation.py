@@ -119,7 +119,7 @@ class TransformerRegressor(nn.Module):
         x = self.positional_encoding(x)
         x = self.transformer_encoder(x)
 
-        # Mean pooling over timesteps
+        
         seq_repr = x.mean(dim=1)
 
         combined = torch.cat([seq_repr, static_x], dim=1)
